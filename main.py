@@ -22,7 +22,7 @@ Quantity : {self.quantity}
         
     
 class Customer():
-    def __init__(self, name, password, acc_num, balance=0):
+    def __init__(self, name="", password="", acc_num=0, balance=0):
         self.name = name
         self.password = password
         self.acc_num = acc_num
@@ -43,6 +43,8 @@ class Customer():
                 self.acc_num = number
                 break
         print(f"Your Account Number is {self.acc_num}")
+        customer = Customer(self.name, self.password, self.acc_num, 0)
+        accounts.append(customer)
 
     def login(self):
         name = input("Enter your name : ")
@@ -92,4 +94,46 @@ Quantity : {product.quantity}
 
         else:
             print("Product Not Found")
+
+    def check_users(self):
+        for index, account in enumerate(accounts, start=1):
+            print(f"""
+----------------------------------------
+{index}. Name : {account.name}
+Balance : {account.balance}
+Account Number : {account.acc_num}
+----------------------------------------""")
             
+    
+def menu():
+    while True:
+        print("Which feature would you like to use:")
+        print("1. Register\n" \
+        "2. Login\n" \
+        "3. Exit")
+        choice = input()
+
+        if choice == "1":
+            new_acc = Customer()
+            new_acc.register()
+            time.sleep(1)
+
+        elif choice == "2":
+            acc_num = int(input("Enter your account number : "))
+            found = False
+            for acc in accounts:
+                if acc.acc_num == acc_num:
+                    acc.login()
+                    found = True
+                    break
+            if not found:
+                print("Account Number Not Found")
+
+        elif choice == "3":
+            exit()
+
+        else:
+            print("Invalid Command")
+
+menu()
+        
