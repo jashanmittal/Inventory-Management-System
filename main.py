@@ -106,6 +106,7 @@ class Admin():
 
         product = Product(item_name, item_quantity, item_price)
         stock.append(product)
+        save_data()
 
         print("Successfully added the product")
 
@@ -127,6 +128,7 @@ Quantity : {product.quantity}
         if 1 <= choice <= len(stock):
             stock.pop(choice - 1)
             print("Deleted Successfully")
+            save_data()
 
         else:
             print("Product Not Found")
@@ -153,6 +155,7 @@ def menu():
         if choice == "1":
             new_acc = Customer()
             new_acc.register()
+            save_data()
             time.sleep(1)
 
         elif choice == "2":
@@ -198,12 +201,20 @@ Quantity : {product.quantity}
             buy = int(input("Which product would you like to buy : "))
         except ValueError:
             print("Product Not Found")
-        
-        current_account.balance -= stock[buy - 1].price
-        stock[buy - 1].quantity -= 1
-        print("Purchase successful")
-        transaction.append(f"Bought {stock[buy - 1].item} for {stock[buy - 1].price} on {datetime.datetime.now()}")
-        time.sleep(1)
+        if buy < 1 or buy > len(stock):
+            print("Product Not Found")
+            return
+        if stock[buy - 1].quantity <= 0:
+            print("Product Out of Stock")
+        elif current_account.balance < stock[buy - 1].price:
+            print("Insufficient Balance")
+        else:
+            current_account.balance -= stock[buy - 1].price
+            stock[buy - 1].quantity -= 1
+            print("Purchase successful")
+            transaction.append(f"Bought {stock[buy - 1].item} for {stock[buy - 1].price} on {datetime.datetime.now()}")
+            save_data()
+            time.sleep(1)
 
     elif choice == "2":
         print(f"Your balance is {current_account.balance}")
@@ -260,3 +271,5 @@ def admin_menu():
 
         else:
             print("Invalid Command")  
+
+
