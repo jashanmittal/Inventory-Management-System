@@ -1,1 +1,1 @@
-[{"name": "Abc", "password": "123", "acc_num": 524, "balance": 0, "inventory": [], "transactions": []}]
+[{"name": "abc", "password": "123", "acc_num": 288, "balance": 99000.0, "transactions": ["Bought Laptop for 1000.0 on 2026-06-26 00:36:34.338435"], "inventory": [{"item": "Laptop", "price": 1000.0, "quantity": 1}]}]

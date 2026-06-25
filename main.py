@@ -12,14 +12,16 @@ def save_data():
         json.dump([acc.__dict__ for acc in accounts], f)
     with open("stock.json", "w") as f:
         json.dump([prod.__dict__ for prod in stock], f)
-
+        
 def load_data():
-    global accounts, stock
+    global accounts, stock, transactions
     try:
         with open("accounts.json", "r") as f:
             accounts_data = json.load(f)
             accounts = [Customer(**acc) for acc in accounts_data]
     except FileNotFoundError:
+        accounts = []
+    except json.JSONDecodeError:
         accounts = []
 
     try:
@@ -56,14 +58,14 @@ Quantity : {self.quantity}
         
     
 class Customer():
-    def __init__(self, name="", password="", acc_num=0, balance=0):
+    def __init__(self, name="", password="", acc_num=0, balance=0, transactions=None, inventory=None):
         self.name = name
         self.password = password
         self.acc_num = acc_num
         self.balance = balance
-        self.inventory = []
-        self.transactions = []
-    
+        self.transactions = transactions if transactions is not None else []
+        self.inventory = inventory if inventory is not None else []
+
     def register(self):
         self.name = input("Enter your name : ")
         self.password = input("Enter the password : ")
@@ -79,21 +81,8 @@ class Customer():
                 self.acc_num = number
                 break
         print(f"Your Account Number is {self.acc_num}")
-        customer = Customer(self.name, self.password, self.acc_num, 0)
-        accounts.append(customer)
-
-    def login(self):
-        name = input("Enter your name : ")
-        password = input("Enter your password : ")
-
-        if name == self.name and password == self.password:
-            print("Sucessfully Logged In")
-        elif name != self.name:
-            print("Invalid Name")
-        elif password != self.password:
-            print("Invalid Password")
-        else:
-            print("Invalid name and password")
+        accounts.append(self)
+        save_data()
 
 class Admin():
     def __init__(self):
@@ -144,6 +133,7 @@ Account Number : {account.acc_num}
             
     
 def menu():
+    load_data()
     while True:
         print("Which feature would you like to use:")
         print("1. Register\n" \
@@ -160,15 +150,17 @@ def menu():
 
         elif choice == "2":
             acc_num = int(input("Enter your account number : "))
+            password = input("Enter your password : ")
             found = False
-            for acc in accounts:
-                if acc.acc_num == acc_num:
-                    acc.login()
-                    main(acc)
+            for account in accounts:
+                if account.acc_num == acc_num and account.password == password:
+                    print("Successfully Logged In")
                     found = True
+                    main(account)
                     break
             if not found:
-                print("Account Number Not Found")
+                print("Invalid Account Number or Password")
+                time.sleep(1)
 
         elif choice == "3":
             admin_login()
@@ -181,75 +173,78 @@ def menu():
 
 
 def main(current_account):
-    print("Which feature would you like to use:")
-    print("1. Buy Products\n" \
-    "2. Check Balance\n" \
-    "3. Check Inventory\n" \
-    "4. Check Transactions\n" \
-    "5. Add Funds\n" \
-    "6. Logout")
-    choice = input()
+    while True:
+        print("Which feature would you like to use:")
+        print("1. Buy Products\n" \
+        "2. Check Balance\n" \
+        "3. Check Inventory\n" \
+        "4. Check Transactions\n" \
+        "5. Add Funds\n" \
+        "6. Logout")
+        choice = input()
 
-    if choice == "1":
-        for index, product in enumerate(stock, start=1):
-            print(f"""
----------------------------------
-{index}. Item : {product.item}
-Price : {product.price}
-Quantity : {product.quantity}
----------------------------------""")
-        
-        try:
-            buy = int(input("Which product would you like to buy : "))
-        except ValueError:
-            print("Product Not Found")
-        if buy < 1 or buy > len(stock):
-            print("Product Not Found")
-            return
-        if stock[buy - 1].quantity <= 0:
-            print("Product Out of Stock")
-        elif current_account.balance < stock[buy - 1].price:
-            print("Insufficient Balance")
-        else:
-            current_account.balance -= stock[buy - 1].price
-            stock[buy - 1].quantity -= 1
-            print("Purchase successful")
-            transaction.append(f"Bought {stock[buy - 1].item} for {stock[buy - 1].price} on {datetime.datetime.now()}")
+        if choice == "1":
+            for index, product in enumerate(stock, start=1):
+                print(f"""
+    ---------------------------------
+    {index}. Item : {product.item}
+    Price : {product.price}
+    Quantity : {product.quantity}
+    ---------------------------------""")
+            
+            try:
+                buy = int(input("Which product would you like to buy : "))
+            except ValueError:
+                print("Product Not Found")
+                continue
+            if buy < 1 or buy > len(stock):
+                print("Product Not Found")
+                return
+            if stock[buy - 1].quantity <= 0:
+                print("Product Out of Stock")
+            elif current_account.balance < stock[buy - 1].price:
+                print("Insufficient Balance")
+            else:
+                current_account.balance -= stock[buy - 1].price
+                stock[buy - 1].quantity -= 1
+                print("Purchase successful")
+                current_account.transactions.append(f"Bought {stock[buy - 1].item} for {stock[buy - 1].price} on {datetime.datetime.now()}")
+                current_account.inventory.append({"item":stock[buy - 1].item, "price":stock[buy - 1].price, "quantity":1})
+                save_data()
+                time.sleep(1)
+
+        elif choice == "2":
+            print(f"Your balance is {current_account.balance}")
+            time.sleep(1)
+
+        elif choice == "3":
+            for index, product in enumerate(current_account.inventory, start=1):
+                print(f"""---------------------------------
+    {index}. Item : {product["item"]}
+    Price : {product["price"]}
+    Quantity : {product["quantity"]}
+    ---------------------------------""")
+            time.sleep(1)
+
+        elif choice == "4":
+            for index, transaction in enumerate(current_account.transactions, start=1):
+                print(f"{index}. {transaction}")
+            time.sleep(1)
+
+        elif choice == "5":
+            amount = float(input("Enter the amount to add : "))
+            current_account.balance += amount
+            print("Funds added successfully")
             save_data()
             time.sleep(1)
 
-    elif choice == "2":
-        print(f"Your balance is {current_account.balance}")
-        time.sleep(1)
-
-    elif choice == "3":
-        for index, product in enumerate(current_account.inventory, start=1):
-            print(f"""---------------------------------
-{index}. Item : {product.item}
-Price : {product.price}
-Quantity : {product.quantity}
----------------------------------""")
-        time.sleep(1)
-
-    elif choice == "4":
-        for index, transaction in enumerate(current_account.transactions, start=1):
-            print(f"{index}. {transaction}")
-        time.sleep(1)
-
-    elif choice == "5":
-        amount = float(input("Enter the amount to add : "))
-        current_account.balance += amount
-        print("Funds added successfully")
-        save_data()
-        time.sleep(1)
-
-    elif choice == "6":
-        print("Logging out...")
-        time.sleep(1)
-        menu()
-    
-    else:
-        print("Invalid Command")
+        elif choice == "6":
+            print("Logging out...")
+            time.sleep(1)
+            menu()
+        
+        else:
+            print("Invalid Command")
 
 def admin_menu():
     admin = Admin()
@@ -284,9 +279,14 @@ def admin_menu():
                 print("Stock is sufficient")
 
         elif choice == "5":
-            for index, transaction in enumerate(transaction, start=1):
-                print(f"{index}. {transaction}")
-                time.sleep(1)
+            for account in accounts:
+                print(f"\n--- {account.name} ({account.acc_num}) ---")
+
+                if not account.transactions:
+                    print("No transactions")
+                else:
+                    for transaction in account.transactions:
+                        print(transaction)
 
         elif choice == "6":
             print("Logging out...")
