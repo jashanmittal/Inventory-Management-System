@@ -4,9 +4,10 @@ import json
 import datetime
 
 accounts = []
+stock = []
 
 class Product():
-    def __int__(self, item, quantity, price):
+    def __init__(self, item, quantity, price):
         self.item = item
         self.quantity = quantity
         self.price = price
@@ -41,7 +42,7 @@ class Customer():
             if not found:
                 self.acc_num = number
                 break
-            print(f"Your Account Number is {self.acc_num}")
+        print(f"Your Account Number is {self.acc_num}")
 
     def login(self):
         name = input("Enter your name : ")
@@ -56,3 +57,40 @@ class Customer():
         else:
             print("Invalid name and password")
 
+class Admin():
+    def __init__(self):
+        pass
+    
+    def add_product(self):
+        item_name = input("Name of item : ")
+        item_price = float(input("Enter item's price : "))
+        item_quantity = int(input("Enter quantity : "))
+
+        product = Product(item_name, item_quantity, item_price)
+        stock.append(product)
+
+        print("Successfully added the product")
+
+    def remove_product(self):
+        product = Product(item_name, item_quantity, item_price)
+        for index, _ in enumerate(stock, start=1):
+            print(f"""
+---------------------------------
+{index}. Item : {product.item}
+Price : {product.price}
+Quantity : {product.quantity}
+---------------------------------""")
+            
+        try:
+            choice = int(input("Which would you like to delete? "))
+        except ValueError:
+            print("Enter Valid Value")
+            return
+        
+        if 1 <= choice <= len(stock):
+            stock.pop(choice - 1)
+            print("Deleted Successfully")
+
+        else:
+            print("Product Not Found")
+            
