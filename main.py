@@ -72,8 +72,7 @@ class Admin():
         print("Successfully added the product")
 
     def remove_product(self):
-        product = Product(item_name, item_quantity, item_price)
-        for index, _ in enumerate(stock, start=1):
+        for index, product in enumerate(stock, start=1):
             print(f"""
 ---------------------------------
 {index}. Item : {product.item}
