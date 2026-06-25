@@ -179,13 +179,15 @@ def menu():
         else:
             print("Invalid Command")
 
+
 def main(current_account):
     print("Which feature would you like to use:")
     print("1. Buy Products\n" \
     "2. Check Balance\n" \
     "3. Check Inventory\n" \
     "4. Check Transactions\n" \
-    "5. Logout")
+    "5. Add Funds\n" \
+    "6. Logout")
     choice = input()
 
     if choice == "1":
@@ -235,6 +237,13 @@ Quantity : {product.quantity}
         time.sleep(1)
 
     elif choice == "5":
+        amount = float(input("Enter the amount to add : "))
+        current_account.balance += amount
+        print("Funds added successfully")
+        save_data()
+        time.sleep(1)
+
+    elif choice == "6":
         print("Logging out...")
         time.sleep(1)
         menu()
@@ -249,7 +258,9 @@ def admin_menu():
         print("1. Add Product\n" \
         "2. Remove Product\n" \
         "3. Check Users\n" \
-        "4. Logout")
+        "4. Notifications\n" \
+        "5. All Transactions\n" \
+        "6. Logout")
         choice = input("Enter your choice : ")
 
         if choice == "1":
@@ -265,6 +276,19 @@ def admin_menu():
             time.sleep(1)
 
         elif choice == "4":
+            if len(stock) == 0:
+                print("No products in stock")
+            elif len(stock) < 5:
+                print("Stock is running low")
+            else:
+                print("Stock is sufficient")
+
+        elif choice == "5":
+            for index, transaction in enumerate(transaction, start=1):
+                print(f"{index}. {transaction}")
+                time.sleep(1)
+
+        elif choice == "6":
             print("Logging out...")
             time.sleep(1)
             menu()
@@ -272,4 +296,4 @@ def admin_menu():
         else:
             print("Invalid Command")  
 
-
+menu()
